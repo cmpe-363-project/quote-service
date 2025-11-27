@@ -1,11 +1,11 @@
 package restapi
 
 import (
+	"net/http"
 	"quote-service/internal/repository"
 	"quote-service/internal/restapi/routes"
 	"quote-service/pkg/authorclient"
 	"quote-service/pkg/logger"
-	"net/http"
 	"strconv"
 )
 
@@ -19,6 +19,26 @@ type App struct {
 	Host string
 }
 
+// corsMiddleware adds CORS headers to allow cross-origin requests
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Max-Age", "3600")
+
+		// Handle preflight OPTIONS request
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		// Call the next handler
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (a *App) SetupAndRun() {
 	mux := http.NewServeMux()
 
@@ -26,9 +46,12 @@ func (a *App) SetupAndRun() {
 	mux.HandleFunc("GET /api/quote/random", routes.HandleGetRandomQuote(a.Logger, a.Repository, a.AuthorClient))
 	mux.HandleFunc("GET /api/version", routes.HandleGetVersion(a.Version, a.AuthorClient, a.Logger))
 
+	// Wrap the mux with CORS middleware
+	handler := corsMiddleware(mux)
+
 	server := &http.Server{
 		Addr:    a.Host + ":" + strconv.Itoa(a.Port),
-		Handler: mux,
+		Handler: handler,
 	}
 
 	a.Logger.Info("Starting server", "host", a.Host, "port", strconv.Itoa(a.Port))
