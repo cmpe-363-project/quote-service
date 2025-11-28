@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: quote-service
-        image: erayalp/cmpe-363-quote-service:latest
+        image: docker pull registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8081
