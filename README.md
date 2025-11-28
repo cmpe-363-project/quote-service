@@ -4,30 +4,11 @@ A simple REST API service for managing quotes, built with Go. This service commu
 
 ## Starting the Service
 
-Start database:
-
-```bash
-docker compose up mysql -d
-```
-
-Create the database:
-
-```bash
-docker exec quote-service-mysql mysql -uroot -proot -e "CREATE DATABASE quote_service;"
-```
-
 Start the Author Service:
 
 ```bash
 docker compose up restapi
 ```
-
-Add sample authors: (TODO: this will be updated with the dummy quote databse being found)
-
-```bash
-docker exec quote-service-mysql mysql -uroot -proot quote_service -e "INSERT INTO quotes (id, message, author_id) VALUES (1, 'quote 1', 1), (2, 'quote 2', 2), (3, 'quote 3', 3);"
-```
-
 
 ## Endpoints
 
