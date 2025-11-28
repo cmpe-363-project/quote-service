@@ -16,28 +16,28 @@ spec:
         app: quote-service
     spec:
       containers:
-      - name: quote-service
-        image: docker pull registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8081
-          name: http
-        env:
-        - name: HOST
-          value: "0.0.0.0"
-        - name: PORT
-          value: "8081"
-        - name: AUTHOR_SERVICE_URL
-          value: "http://author-service:8082"
-        livenessProbe:
-          httpGet:
-            path: /api/version
-            port: 8081
-          initialDelaySeconds: 10
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/version
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: quote-service
+          image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+              name: http
+          env:
+            - name: HOST
+              value: '0.0.0.0'
+            - name: PORT
+              value: '8081'
+            - name: AUTHOR_SERVICE_URL
+              value: 'http://author-service:8082'
+          livenessProbe:
+            httpGet:
+              path: /api/version
+              port: 8081
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/version
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 5
