@@ -1,1 +1,43 @@
-image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0.0.1
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quote-service
+  namespace: quote-app
+  labels:
+    app: quote-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quote-service
+  template:
+    metadata:
+      labels:
+        app: quote-service
+    spec:
+      containers:
+      - name: quote-service
+        image: erayalp/cmpe-363-quote-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8081
+          name: http
+        env:
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8081"
+        - name: AUTHOR_SERVICE_URL
+          value: "http://author-service:8082"
+        livenessProbe:
+          httpGet:
+            path: /api/version
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/version
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 5
