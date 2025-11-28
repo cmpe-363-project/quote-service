@@ -1,1 +1,1 @@
-image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:0
+image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0.0.1
