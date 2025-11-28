@@ -12,7 +12,7 @@ import (
 type App struct {
 	Version      string
 	Logger       logger.Logger
-	Repository   repository.MysqlRepository
+	Repository   repository.Repository
 	AuthorClient *authorclient.Client
 
 	Port int

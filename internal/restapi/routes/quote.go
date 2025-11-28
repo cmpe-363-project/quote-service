@@ -1,17 +1,17 @@
 package routes
 
 import (
+	"net/http"
 	"quote-service/internal/repository"
 	restapiutils "quote-service/internal/restapi/utils"
 	"quote-service/pkg/authorclient"
 	"quote-service/pkg/logger"
-	"net/http"
 	"strconv"
 )
 
 // HandleGetQuoteByID
 // /api/quote/{id}
-func HandleGetQuoteByID(logger logger.Logger, repo repository.MysqlRepository, authorClient *authorclient.Client) http.HandlerFunc {
+func HandleGetQuoteByID(logger logger.Logger, repo repository.Repository, authorClient *authorclient.Client) http.HandlerFunc {
 	type AuthorInfo struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
@@ -70,7 +70,7 @@ func HandleGetQuoteByID(logger logger.Logger, repo repository.MysqlRepository, a
 
 // HandleGetRandomQuote
 // /api/quote/random
-func HandleGetRandomQuote(logger logger.Logger, repo repository.MysqlRepository, authorClient *authorclient.Client) http.HandlerFunc {
+func HandleGetRandomQuote(logger logger.Logger, repo repository.Repository, authorClient *authorclient.Client) http.HandlerFunc {
 	type AuthorInfo struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`

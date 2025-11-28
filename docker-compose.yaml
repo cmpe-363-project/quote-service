@@ -1,21 +1,21 @@
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: quote-service-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "3307:3306"
-    volumes:
-      - ./_data/mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
+  # mysql:
+  #   image: mysql:8.0
+  #   container_name: quote-service-mysql
+  #   restart: unless-stopped
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #     MYSQL_DATABASE: ${DB_NAME}
+  #     MYSQL_USER: ${DB_USER}
+  #     MYSQL_PASSWORD: ${DB_PASSWORD}
+  #   ports:
+  #     - "3307:3306"
+  #   volumes:
+  #     - ./_data/mysql-data:/var/lib/mysql
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     timeout: 20s
+  #     retries: 10
 
   restapi:
     build:
@@ -34,7 +34,7 @@ services:
       DB_NAME: ${DB_NAME}
       AUTHOR_SERVICE_URL: ${AUTHOR_SERVICE_URL}
     ports:
-      - "8081:${PORT}"
+      - '8081:${PORT}'
     depends_on:
       mysql:
         condition: service_healthy
