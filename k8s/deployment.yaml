@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: quote-service
-          image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0
+          image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0.0.1.2
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
