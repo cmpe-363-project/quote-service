@@ -15,9 +15,11 @@ spec:
       labels:
         app: quote-service
     spec:
+      imagePullSecrets:
+      - name: gitlab-registry-secret
       containers:
         - name: quote-service
-          image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:v0.0.1.2
+          image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
