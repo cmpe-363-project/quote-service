@@ -35,7 +35,7 @@ func main() {
 	})
 
 	app := &restapi.App{
-		Version:      "v0.0.2",
+		Version:      "v0.0.1.5",
 		Logger:       logger,
 		Repository:   repo,
 		AuthorClient: authorClient,
