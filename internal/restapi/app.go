@@ -45,6 +45,7 @@ func (a *App) SetupAndRun() {
 	mux.HandleFunc("GET /api/quote/{id}", routes.HandleGetQuoteByID(a.Logger, a.Repository, a.AuthorClient))
 	mux.HandleFunc("GET /api/quote/random", routes.HandleGetRandomQuote(a.Logger, a.Repository, a.AuthorClient))
 	mux.HandleFunc("GET /api/version", routes.HandleGetVersion(a.Version, a.AuthorClient, a.Logger))
+	mux.HandleFunc("GET /api/mock-memory", routes.HandleAutoScalingDemo(a.Logger))
 
 	// Wrap the mux with CORS middleware
 	handler := corsMiddleware(mux)

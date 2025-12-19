@@ -58,13 +58,13 @@ jobs:
         working-directory: infra
         run: |
           sed -i "s|image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:.*|image: registry.gitlab.com/berk-karaal/cmpe363-project/quote-service:${{ steps.tag.outputs.tag }}|g" \
-            quote-service/deployment.yaml
+            applications/quote-app/quote-service/deployment.yaml
 
       - name: Commit and push to infra repo
         working-directory: infra
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add quote-service/deployment.yaml
+          git add applications/quote-app/quote-service/deployment.yaml
           git commit -m "Update quote-service image to ${{ steps.tag.outputs.tag }}"
           git push origin main
