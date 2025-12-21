@@ -17,8 +17,10 @@ var (
 
 // HandleAutoScalingDemo
 // /api/mock-memory
-// This endpoint allocates 10MB of memory and holds it for 10 seconds
-// to demonstrate auto-scaling behavior
+// This endpoint allocates dynamic memory and holds it for specified duration
+// to demonstrate auto-scaling behavior. Query parameters:
+//   - memory_mb: memory to allocate in MB (1-1000, default: 10)
+//   - duration_seconds: duration to hold memory in seconds (1-300, default: 10)
 func HandleAutoScalingDemo(logger logger.Logger) http.HandlerFunc {
 	type Response struct {
 		Message           string `json:"message"`
@@ -29,19 +31,90 @@ func HandleAutoScalingDemo(logger logger.Logger) http.HandlerFunc {
 		ActiveAllocations int    `json:"active_allocations"`
 	}
 
+	type RequestError struct {
+		Error   string `json:"error"`
+		Code    int    `json:"code"`
+		Details string `json:"details,omitempty"`
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
 		requestID := strconv.FormatInt(startTime.UnixNano(), 10)
 
+		// Parse query parameters
+		memoryMBStr := r.URL.Query().Get("memory_mb")
+		durationSecondsStr := r.URL.Query().Get("duration_seconds")
+
+		// Set defaults
+		memoryMB := 10  // Default 10MB
+		durationS := 10 // Default 10 seconds
+
+		var err error
+
+		// Parse and validate memory_mb parameter
+		if memoryMBStr != "" {
+			memoryMB, err = strconv.Atoi(memoryMBStr)
+			if err != nil || memoryMB <= 0 {
+				logger.WarnWithCtx(r.Context(), "Invalid memory_mb parameter",
+					"memory_mb", memoryMBStr, "request_id", requestID)
+				errorResp := RequestError{
+					Error:   "Invalid memory_mb parameter",
+					Code:    400,
+					Details: "memory_mb must be a positive integer",
+				}
+				restapiutils.WriteJSONResponse(w, http.StatusBadRequest, errorResp)
+				return
+			}
+			if memoryMB > 1000 { // Limit to 1GB max
+				logger.WarnWithCtx(r.Context(), "Memory limit exceeded",
+					"memory_mb", strconv.Itoa(memoryMB), "request_id", requestID)
+				errorResp := RequestError{
+					Error:   "Memory limit exceeded",
+					Code:    400,
+					Details: "memory_mb cannot exceed 1000MB (1GB)",
+				}
+				restapiutils.WriteJSONResponse(w, http.StatusBadRequest, errorResp)
+				return
+			}
+		}
+
+		// Parse and validate duration_seconds parameter
+		if durationSecondsStr != "" {
+			durationS, err = strconv.Atoi(durationSecondsStr)
+			if err != nil || durationS <= 0 {
+				logger.WarnWithCtx(r.Context(), "Invalid duration_seconds parameter",
+					"duration_seconds", durationSecondsStr, "request_id", requestID)
+				errorResp := RequestError{
+					Error:   "Invalid duration_seconds parameter",
+					Code:    400,
+					Details: "duration_seconds must be a positive integer",
+				}
+				restapiutils.WriteJSONResponse(w, http.StatusBadRequest, errorResp)
+				return
+			}
+			if durationS > 300 { // Limit to 5 minutes max
+				logger.WarnWithCtx(r.Context(), "Duration limit exceeded",
+					"duration_seconds", strconv.Itoa(durationS), "request_id", requestID)
+				errorResp := RequestError{
+					Error:   "Duration limit exceeded",
+					Code:    400,
+					Details: "duration_seconds cannot exceed 300 (5 minutes)",
+				}
+				restapiutils.WriteJSONResponse(w, http.StatusBadRequest, errorResp)
+				return
+			}
+		}
+
 		// Log the start of autoscaling demo
 		logger.InfoWithCtx(r.Context(), "Mock-memory endpoint called",
-			"timestamp", startTime.Format(time.RFC3339), "request_id", requestID)
+			"timestamp", startTime.Format(time.RFC3339), "request_id", requestID,
+			"memory_mb", strconv.Itoa(memoryMB), "duration_seconds", strconv.Itoa(durationS))
 
-		// Allocate 10MB of memory
-		logger.InfoWithCtx(r.Context(), "Allocating 10MB memory for mock-memory demo",
-			"request_id", requestID)
+		// Allocate memory based on parameter
+		logger.InfoWithCtx(r.Context(), "Allocating memory for mock-memory demo",
+			"request_id", requestID, "memory_mb", strconv.Itoa(memoryMB))
 
-		memoryAllocation := make([]byte, 10*1024*1024) // 10MB
+		memoryAllocation := make([]byte, memoryMB*1024*1024) // Dynamic memory allocation
 
 		// Fill memory with patterns to prevent optimization and ensure allocation
 		for i := 0; i < len(memoryAllocation); i += 4096 { // Page-sized chunks
@@ -64,9 +137,10 @@ func HandleAutoScalingDemo(logger logger.Logger) http.HandlerFunc {
 
 		logger.Debug("Memory checksum: " + strconv.FormatUint(checksum, 10))
 
-		// Hold the memory for 10 seconds while doing periodic work
-		logger.InfoWithCtx(r.Context(), "Holding memory for 10 seconds",
-			"request_id", requestID, "active_allocations", strconv.Itoa(currentAllocations))
+		// Hold the memory for specified duration while doing periodic work
+		logger.InfoWithCtx(r.Context(), "Holding memory for specified duration",
+			"request_id", requestID, "active_allocations", strconv.Itoa(currentAllocations),
+			"duration_seconds", strconv.Itoa(durationS))
 
 		// Periodic work to keep memory active
 		ticker := time.NewTicker(1 * time.Second)
@@ -86,7 +160,7 @@ func HandleAutoScalingDemo(logger logger.Logger) http.HandlerFunc {
 			}
 		}()
 
-		time.Sleep(10 * time.Second)
+		time.Sleep(time.Duration(durationS) * time.Second)
 		done <- true
 
 		// Clean up: remove from global map
@@ -108,8 +182,8 @@ func HandleAutoScalingDemo(logger logger.Logger) http.HandlerFunc {
 
 		resp := Response{
 			Message:           "Mock-memory demo completed successfully",
-			MemoryMB:          10,
-			DurationS:         10,
+			MemoryMB:          memoryMB,
+			DurationS:         durationS,
 			Timestamp:         startTime.Format(time.RFC3339),
 			RequestID:         requestID,
 			ActiveAllocations: currentAllocations,
